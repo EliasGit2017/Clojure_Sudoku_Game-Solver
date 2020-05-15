@@ -63,19 +63,15 @@
     (= kind1 kind2) kind1
     :else (hash-set kind1 kind2)))
 
-(fact
- (merge-conflict-kind :row :row) => :row)
+(facts
+  (merge-conflict-kind :row :row) => :row
 
-(fact
- (merge-conflict-kind :row :block) => #{:row :block})
+ (merge-conflict-kind :row :block) => #{:row :block}
 
-(fact
- (merge-conflict-kind :row #{:row :block}) => #{:row, :block})
+ (merge-conflict-kind :row #{:row :block}) => #{:row, :block}
 
-(fact
- (merge-conflict-kind #{:row :block} :block) => #{:row, :block})
+ (merge-conflict-kind #{:row :block} :block) => #{:row, :block}
 
-(fact
  (merge-conflict-kind #{:row :block} #{:block :col}) => #{:row :block :col})
 
 

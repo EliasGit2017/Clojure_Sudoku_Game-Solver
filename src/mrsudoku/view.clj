@@ -32,6 +32,7 @@
                                ;;      but it's an emblamatic counter-example
                                ((resolve 'mrsudoku.control/cell-input-handler) ctrl cell-widget cx cy)])
              cell-widget)
+;; A new :status is possible for the solved cells which will be diplayed over a green background
     :solved (label :text (str (:value cell))
                    :h-text-position :center
                    :v-text-position :center
@@ -76,10 +77,9 @@
                                                      (grid-panel
                                                       :columns 1
                                                       :vgap 20
-                                                      :items [(button :text "Load")
+                                                      :items [(button :text "Generate New Grid")
                                                               (button :text "Solve Naïvely"
                                                                       :listen [:action (fn [event] ((resolve 'mrsudoku.control/show-solvedgrid) ctrl (s/bruteforce-solve grid)))])
-                                                              (button :text "Knuth's Dancing Links")
                                                               (button :text "Quit"
                                                                       :listen [:action (fn [event] (System/exit 0))])])
                                                      :fill-v])
