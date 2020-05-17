@@ -6,9 +6,6 @@
 
 (def ^:private sudoku-grid (var-get #'g/sudoku-grid))
 ;;---------------------------------------------------------------------------------------------------------------------------------------
-;; Functions used to generate a random grid considering the fact that the minimum number of specified digits must be at least 17 to have
-;; a unique answer (for initial grids that have less than 17 specified digits, there is no configuration such as only one solution is
-;; possible).
 ;; Naïve and slow solver
 
 (defn possible-values
@@ -68,3 +65,29 @@
 
 ;; Print solution
 (println (g/grid->str (bruteforce-solve sudoku-grid)))
+
+;; ----------------------------------------------------------------------------------------------------------------------------------------
+;; Functions used to generate a random grid considering the fact that the minimum number of specified digits must be at least 17 to have
+;; a unique answer (for initial grids that have less than 17 specified digits, there is no configuration such as only one solution is
+;; possible).
+
+(defn mk-empty-grid
+  "Returns an empty sudoku grid"
+  []
+  (conj (into [] (repeat 3 (into [] (repeat 3 (into [] (repeat 9 (g/mk-cell)))))))))
+
+(fact
+ (g/grid->str (mk-empty-grid)) => " .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . ")
+
+(defn mk-randomgrid
+  "Returns a random sudoku `grid` having `n` numbers set."
+  [grid n]
+  (loop [rand-grid grid, n n]
+    (if (zero? n)
+      rand-grid
+      (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10))]
+        (if (and (= :empty (:status (g/cell rand-grid cx cy))) (not= 0 (count (possible-values rand-grid cx cy))))
+          (recur (g/change-cell rand-grid cx cy {:status :init, :value (rand-nth (into [] (possible-values rand-grid cx cy)))}) (dec n))
+          (recur rand-grid n))))))
+
+(g/grid->str (mk-randomgrid (mk-empty-grid) 40))

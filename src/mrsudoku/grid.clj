@@ -1,4 +1,3 @@
-
 (ns mrsudoku.grid
   (:use midje.sweet)
   (:require [mrsudoku.utils :refer [concatv]]))
@@ -60,6 +59,8 @@
      (mk-cell) (mk-cell) (mk-cell 5)
      (mk-cell) (mk-cell 7) (mk-cell 9)]]])
 
+(comment (def ^:private sudoku-grid
+  ((resolve 'mrsudoku.solver/mk-randomgrid) ((resolve 'mrsudoku.solver/mk-empty-grid)) 50)))
 
 (defn cell
   "Get the cell at coordinates `(cx,cy)`

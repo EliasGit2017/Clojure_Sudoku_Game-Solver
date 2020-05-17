@@ -77,7 +77,10 @@
                                                      (grid-panel
                                                       :columns 1
                                                       :vgap 20
-                                                      :items [(button :text "Generate New Grid")
+                                                      :items [(button :text "New Random Grid (easy)"
+                                                                      :listen [:action (fn [event] (mk-grid-view (s/mk-randomgrid) ctrl))])
+                                                              (button :text "New Random Grid (intermediate)")
+                                                              (button :text "New Random Grid (hard)")
                                                               (button :text "Solve Naïvely"
                                                                       :listen [:action (fn [event] ((resolve 'mrsudoku.control/show-solvedgrid) ctrl (s/bruteforce-solve grid)))])
                                                               (button :text "Quit"
