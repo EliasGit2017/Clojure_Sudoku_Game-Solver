@@ -22,7 +22,7 @@
 
 ;; Tests
 (fact
- 
+
  (possible-values sudoku-grid 3 1) => #{1 4 2}
 
  (possible-values sudoku-grid 2 4) => #{1 2 5}
@@ -85,9 +85,35 @@
   (loop [rand-grid grid, n n]
     (if (zero? n)
       rand-grid
-      (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10))]
-        (if (and (= :empty (:status (g/cell rand-grid cx cy))) (not= 0 (count (possible-values rand-grid cx cy))))
-          (recur (g/change-cell rand-grid cx cy {:status :init, :value (rand-nth (into [] (possible-values rand-grid cx cy)))}) (dec n))
+      (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10)), possible (possible-values rand-grid cx cy)]
+        (if (and (= :empty (:status (g/cell rand-grid cx cy))) (not= 0 (count possible)))
+          (recur (g/change-cell rand-grid cx cy {:status :init, :value (rand-nth (into [] possible))}) (dec n))
           (recur rand-grid n))))))
 
-(g/grid->str (mk-randomgrid (mk-empty-grid) 40))
+(println (g/grid->str (mk-randomgrid (mk-empty-grid) 40)))
+
+(fact
+
+ (e/grid-conflicts (mk-randomgrid (mk-empty-grid) 8)) => {}
+
+ (e/grid-conflicts (mk-randomgrid (mk-empty-grid) 40)) => {}
+
+ (e/grid-conflicts (mk-randomgrid (mk-empty-grid) 60)) => {}
+
+ (= (mk-randomgrid (mk-empty-grid) 40) (mk-randomgrid (mk-empty-grid) 40)) => false)
+
+(defn mk-easy-grid
+  "Returns an easy grid made of 40 set cells"
+  []
+  (mk-randomgrid (mk-empty-grid) 30))
+
+(defn mk-interm-grid
+  "Returns an intermediate grid made of 32 set cells"
+  []
+  (mk-randomgrid (mk-empty-grid) 26))
+
+(defn mk-hard-grid
+  "Returns a difficult grid made of 17 set cells"
+  []
+  (mk-randomgrid (mk-empty-grid) 17))
+

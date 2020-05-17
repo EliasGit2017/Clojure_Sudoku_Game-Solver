@@ -67,15 +67,16 @@
           (invoke-later (text! cell-widget "")))))))
 
 
-(defn show-solvedgrid [ctrl solved-grid]
-  (reset! ctrl {:grid solved-grid})
-  (let [new-frame (v/mk-main-frame solved-grid ctrl)]
-    (invoke-later (-> new-frame
-                      pack!
-                      show!)))
-  (g/do-grid (fn [cx cy cell]
-               (when (= :solved (:status cell))
-                 (do (swap! ctrl #(assoc % :grid (g/change-cell (:grid %) cx cy cell)))
-                     (config! (fetch-cell-widget ctrl cx cy) :text (:value cell))
-                     (invoke-later (v/update-cell-view! cell (fetch-cell-widget ctrl cx cy)))))) solved-grid))
+(comment
+  (defn show-solvedgrid [ctrl solved-grid]
+    (reset! ctrl {:grid solved-grid})
+    (let [new-frame (v/mk-main-frame solved-grid ctrl)]
+      (invoke-later (-> new-frame
+                        pack!
+                        show!)))
+    (g/do-grid (fn [cx cy cell]
+                 (when (= :solved (:status cell))
+                   (do (swap! ctrl #(assoc % :grid (g/change-cell (:grid %) cx cy cell)))
+                       (config! (fetch-cell-widget ctrl cx cy) :text (:value cell))
+                       (invoke-later (v/update-cell-view! cell (fetch-cell-widget ctrl cx cy)))))) solved-grid)))
 

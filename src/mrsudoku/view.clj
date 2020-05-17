@@ -3,7 +3,7 @@
   (:require
    [mrsudoku.grid :as g]
    [seesaw.core :refer [frame label text config! grid-panel
-                        horizontal-panel vertical-panel button separator]]
+                        horizontal-panel vertical-panel button separator pack! show! invoke-later]]
    [seesaw.border :refer [line-border]]
    [mrsudoku.solver :as s]))
 
@@ -66,6 +66,24 @@
                 :vgap 6
                 :items (into [] block-widgets))))
 
+
+(defn mk-updated-frame
+  [grid ctrl]
+  (let [g-widget (mk-grid-view grid ctrl)
+        main-frame (frame :title "MrSudoku"
+                          :content (horizontal-panel
+                                    :items [g-widget [:fill-h 32]])
+                          :minimum-size [380 :by 380])]
+    (swap! ctrl #(assoc % :grid-widget g-widget :main-frame main-frame))
+    main-frame))
+
+(defn show-updated-grid
+  [grid]
+  (invoke-later
+   (-> (mk-updated-frame grid (atom {:grid grid}))
+       pack!
+       show!)))
+
 (defn mk-main-frame [grid ctrl]
   (let [grid-widget (mk-grid-view grid ctrl)
         main-frame (frame :title "MrSudoku"
@@ -78,11 +96,13 @@
                                                       :columns 1
                                                       :vgap 20
                                                       :items [(button :text "New Random Grid (easy)"
-                                                                      :listen [:action (fn [event] (mk-grid-view (s/mk-randomgrid) ctrl))])
-                                                              (button :text "New Random Grid (intermediate)")
-                                                              (button :text "New Random Grid (hard)")
+                                                                      :listen [:action (fn [event] (show-updated-grid (s/mk-easy-grid)))])
+                                                              (button :text "New Random Grid (intermediate)"
+                                                                      :listen [:action (fn [event] (show-updated-grid (s/mk-interm-grid)))])
+                                                              (button :text "New Random Grid (hard)"
+                                                                      :listen [:action (fn [event] (show-updated-grid (s/mk-hard-grid)))])
                                                               (button :text "Solve Naïvely"
-                                                                      :listen [:action (fn [event] ((resolve 'mrsudoku.control/show-solvedgrid) ctrl (s/bruteforce-solve grid)))])
+                                                                      :listen [:action (fn [event] (show-updated-grid (s/bruteforce-solve grid)))])
                                                               (button :text "Quit"
                                                                       :listen [:action (fn [event] (System/exit 0))])])
                                                      :fill-v])
@@ -91,7 +111,6 @@
                           :on-close :exit)]
     (swap! ctrl #(assoc % :grid-widget grid-widget :main-frame main-frame))
     main-frame))
-
 
 (defn update-cell-view!
   [cell cell-widget]
