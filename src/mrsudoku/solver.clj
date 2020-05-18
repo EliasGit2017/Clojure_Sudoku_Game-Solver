@@ -79,16 +79,43 @@
 (fact
  (g/grid->str (mk-empty-grid)) => " .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . ")
 
+(defn to-init
+  "Updates the :status value in each cell of the solved `grid` to :solved.
+  This function is called at the end of the bruteforce-solve function."
+  [grid]
+  (loop [newgrid grid cx 1 cy 1]
+    (if (<= cy 9)
+      (if (< cx 9)
+        (if (not= (:status (g/cell newgrid cx cy)) :empty)
+          (recur (g/change-cell newgrid cx cy (g/mk-cell (g/cell-value (g/cell newgrid cx cy)))) (inc cx) cy)
+          (recur newgrid (inc cx) cy))
+        (recur (if (not= (:status (g/cell newgrid cx cy)) :empty)
+                 (g/change-cell newgrid cx cy (g/mk-cell (g/cell-value (g/cell newgrid cx cy))))
+                 newgrid) (mod (inc cx) 9) (inc cy)))
+      newgrid)))
+
+
+(comment
+(defn to-init
+  [grid]
+  (let [coords (conj (for [cx (range 1 10)
+                           cy (range 1 10)]
+                       [cx cy]))]
+  (loop [newgrid grid, [cx cy] (first coords), coords (rest coords)]
+    (if (seq coords)
+      (recur )))))
+)
+
 (defn mk-randomgrid
-  "Returns a random sudoku `grid` having `n` numbers set."
+  "Returns a random sudoku grid given an empty `grid` having `n` numbers set"
   [grid n]
-  (loop [rand-grid grid, n n]
-    (if (zero? n)
-      rand-grid
-      (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10)), possible (possible-values rand-grid cx cy)]
-        (if (and (= :empty (:status (g/cell rand-grid cx cy))) (not= 0 (count possible)))
-          (recur (g/change-cell rand-grid cx cy {:status :init, :value (rand-nth (into [] possible))}) (dec n))
-          (recur rand-grid n))))))
+  (loop [rand-grid (bruteforce-solve grid), toset (- 81 n)]
+    (if (zero? toset)
+      (to-init rand-grid)
+      (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10))]
+        (if (= (:status (g/cell rand-grid cx cy)) :solved)
+          (recur (g/change-cell rand-grid cx cy (g/mk-cell)) (dec toset))
+          (recur rand-grid toset))))))
 
 (println (g/grid->str (mk-randomgrid (mk-empty-grid) 40)))
 
@@ -103,17 +130,16 @@
  (= (mk-randomgrid (mk-empty-grid) 40) (mk-randomgrid (mk-empty-grid) 40)) => false)
 
 (defn mk-easy-grid
-  "Returns an easy grid made of 40 set cells"
+  "Returns an easy grid made of 30 set cells"
   []
   (mk-randomgrid (mk-empty-grid) 30))
 
 (defn mk-interm-grid
-  "Returns an intermediate grid made of 32 set cells"
+  "Returns an intermediate grid made of 24 set cells"
   []
-  (mk-randomgrid (mk-empty-grid) 26))
+  (mk-randomgrid (mk-empty-grid) 24))
 
 (defn mk-hard-grid
   "Returns a difficult grid made of 17 set cells"
   []
-  (mk-randomgrid (mk-empty-grid) 17))
-
+  (mk-randomgrid (mk-empty-grid) 15))
