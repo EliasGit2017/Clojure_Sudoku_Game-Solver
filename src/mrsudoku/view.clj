@@ -94,7 +94,7 @@
                                              :items [:fill-v
                                                      (grid-panel
                                                       :columns 1
-                                                      :vgap 20
+                                                      :vgap 10
                                                       :items [(button :text "New Random Grid (easy)"
                                                                       :listen [:action (fn [event] (show-updated-grid (s/mk-easy-grid)))])
                                                               (button :text "New Random Grid (intermediate)"
@@ -107,7 +107,7 @@
                                                                       :listen [:action (fn [event] (System/exit 0))])])
                                                      :fill-v])
                                             [:fill-h 32]])
-                          :minimum-size [540 :by 380]
+                          :minimum-size [640 :by 450]
                           :on-close :exit)]
     (swap! ctrl #(assoc % :grid-widget grid-widget :main-frame main-frame))
     main-frame))

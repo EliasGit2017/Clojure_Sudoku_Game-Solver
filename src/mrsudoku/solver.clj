@@ -52,9 +52,9 @@
 
 ;; bruteforce-solve is called on every cell of the grid but only the cells that are not :init are considered
 ;; this solution uses a signicative amount of memory compared to other solving methods.
+
 (defn bruteforce-solve
-  "Solves the sudoku `grid` using Brute force ... Can take a very long time for grids with a large.
-  number of possible solutions. Complexity is in O(scary, time is relative but come on...)"
+  "Solves the sudoku `grid` using Brute force"
   ([grid]
    (bruteforce-solve grid (for [cx (range 1 10) cy (range 1 10)] [cx cy])))
   ([grid [cxcy & coords]]
@@ -77,7 +77,13 @@
   (conj (into [] (repeat 3 (into [] (repeat 3 (into [] (repeat 9 (g/mk-cell)))))))))
 
 (fact
- (g/grid->str (mk-empty-grid)) => " .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . ")
+ 
+ (g/grid->str (mk-empty-grid)) => " .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . "
+ 
+ (g/reduce-grid (fn [acc cx cy cell]
+                  (if (= (:status cell) :empty)
+                    (+ acc 1)
+                    acc)) 0 (mk-empty-grid)) => 81)
 
 (defn to-init
   "Updates the :status value in each cell of the solved `grid` to :solved.
@@ -94,22 +100,22 @@
                  newgrid) (mod (inc cx) 9) (inc cy)))
       newgrid)))
 
-
-(comment
-(defn to-init
-  [grid]
-  (let [coords (conj (for [cx (range 1 10)
-                           cy (range 1 10)]
-                       [cx cy]))]
-  (loop [newgrid grid, [cx cy] (first coords), coords (rest coords)]
-    (if (seq coords)
-      (recur )))))
-)
+(defn seed-grid
+  "Returns a grid having `n` cells set. `n` must not exceed 10 in order to lead to a grid that can be solved"
+  [grid n]
+  {:pre [(<= n 10)]}
+  (loop [seed grid, n n]
+    (if (zero? n)
+      (if (bruteforce-solve seed)
+        seed
+        (println "The random grid generated has no solution"))
+      (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10)), poss (into [] (possible-values seed cx cy))]
+       (recur (g/change-cell seed cx cy (g/mk-cell (rand-nth poss))) (dec n)))))) 
 
 (defn mk-randomgrid
   "Returns a random sudoku grid given an empty `grid` having `n` numbers set"
   [grid n]
-  (loop [rand-grid (bruteforce-solve grid), toset (- 81 n)]
+  (loop [rand-grid (bruteforce-solve (seed-grid grid (rand-nth (range 5 10)))), toset (- 81 n)]
     (if (zero? toset)
       (to-init rand-grid)
       (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10))]
@@ -134,12 +140,45 @@
   []
   (mk-randomgrid (mk-empty-grid) 30))
 
+(fact 
+ 
+ (g/reduce-grid (fn [acc cx cy cell]
+                (if (= (:status cell) :empty)
+                  (+ acc 1)
+                  acc)) 0 (mk-easy-grid)) => 51
+ 
+ (e/grid-conflicts (mk-easy-grid)) => {}
+ 
+ (not= (mk-easy-grid) (mk-easy-grid)) => true)
+
 (defn mk-interm-grid
   "Returns an intermediate grid made of 24 set cells"
   []
   (mk-randomgrid (mk-empty-grid) 24))
 
+(fact
+
+ (g/reduce-grid (fn [acc cx cy cell]
+                  (if (= (:status cell) :empty)
+                    (+ acc 1)
+                    acc)) 0 (mk-interm-grid)) => 57
+
+ (e/grid-conflicts (mk-interm-grid)) => {}
+
+ (not= (mk-interm-grid) (mk-interm-grid)) => true)
+
 (defn mk-hard-grid
-  "Returns a difficult grid made of 17 set cells"
+  "Returns a difficult grid made of 15 set cells"
   []
   (mk-randomgrid (mk-empty-grid) 15))
+
+(fact
+
+ (g/reduce-grid (fn [acc cx cy cell]
+                  (if (= (:status cell) :empty)
+                    (+ acc 1)
+                    acc)) 0 (mk-hard-grid)) => 66
+
+ (e/grid-conflicts (mk-hard-grid)) => {}
+
+ (not= (mk-hard-grid) (mk-hard-grid)) => true)
