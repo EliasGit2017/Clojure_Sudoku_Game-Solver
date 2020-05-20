@@ -2,7 +2,8 @@
   (:use midje.sweet)
   (:require [mrsudoku.grid :as g]
             [mrsudoku.engine :as e]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [clojure.java.shell :as sh]))
 
 (def ^:private sudoku-grid (var-get #'g/sudoku-grid))
 ;;---------------------------------------------------------------------------------------------------------------------------------------
@@ -115,7 +116,7 @@
 (defn mk-randomgrid
   "Returns a random sudoku grid given an empty `grid` having `n` numbers set"
   [grid n]
-  (loop [rand-grid (bruteforce-solve (seed-grid grid (rand-nth (range 5 10)))), toset (- 81 n)]
+  (loop [rand-grid (bruteforce-solve (seed-grid grid (rand-nth (range 5 10)))), toset (- 81 n)] ;; ajouter un if-let
     (if (zero? toset)
       (to-init rand-grid)
       (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10))]
@@ -138,14 +139,14 @@
 (defn mk-easy-grid
   "Returns an easy grid made of 30 set cells"
   []
-  (mk-randomgrid (mk-empty-grid) 30))
+  (mk-randomgrid (mk-empty-grid) 32))
 
 (fact 
  
  (g/reduce-grid (fn [acc cx cy cell]
                 (if (= (:status cell) :empty)
                   (+ acc 1)
-                  acc)) 0 (mk-easy-grid)) => 51
+                  acc)) 0 (mk-easy-grid)) => 49
  
  (e/grid-conflicts (mk-easy-grid)) => {}
  
@@ -182,3 +183,16 @@
  (e/grid-conflicts (mk-hard-grid)) => {}
 
  (not= (mk-hard-grid) (mk-hard-grid)) => true)
+
+;; -----------------------------------------------------------------------------------------------------------------------------
+;; Functions used to save/charge a grid given a specified file 
+;; 
+
+(defn save-grid
+  "Saves a given `grid` to a .txt file in order to resume the game later"
+  [grid]
+  (sh/sh "echo" (g/grid->str grid)  ">"  "lastgrid.txt"))
+
+(save-grid sudoku-grid)
+
+(sh/sh "ls")

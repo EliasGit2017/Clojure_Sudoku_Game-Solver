@@ -12,6 +12,8 @@
 (def set-color "blue")
 (def solved-color "green")
 
+(declare show-updated-grid)
+
 (defn mk-cell-view
   [cell cx cy ctrl]
   (case (:status cell)
@@ -72,8 +74,17 @@
   (let [g-widget (mk-grid-view grid ctrl)
         main-frame (frame :title "MrSudoku"
                           :content (horizontal-panel
-                                    :items [g-widget [:fill-h 32]])
-                          :minimum-size [380 :by 380])]
+                                    :items [g-widget [:fill-h 32]
+                                            (vertical-panel
+                                             :items [:fill-v
+                                                     (grid-panel
+                                                      :columns 1
+                                                      :vgap 10
+                                                      :items [(button :text "Solve"
+                                                                      :listen [:action (fn [event] (show-updated-grid (s/bruteforce-solve grid)))])])
+                                                     :fill-v])
+                                            [:fill-h 32]])
+                          :minimum-size [640 :by 450])]
     (swap! ctrl #(assoc % :grid-widget g-widget :main-frame main-frame))
     main-frame))
 
