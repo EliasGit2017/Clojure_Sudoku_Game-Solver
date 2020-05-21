@@ -7,7 +7,7 @@
 
 (def ^:private sudoku-grid (var-get #'g/sudoku-grid))
 ;;---------------------------------------------------------------------------------------------------------------------------------------
-;; Naïve and slow solver
+;; Naïve solver
 
 (defn possible-values
   "Given a `grid`, returns a set of grids whith the possible values in 
@@ -87,8 +87,8 @@
                     acc)) 0 (mk-empty-grid)) => 81)
 
 (defn to-init
-  "Updates the :status value in each cell of the solved `grid` to :solved.
-  This function is called at the end of the bruteforce-solve function."
+  "Updates the :status value in each cell of the new `grid` to :init.
+  This function is called for each new generated grid."
   [grid]
   (loop [newgrid grid cx 1 cy 1]
     (if (<= cy 9)
@@ -184,15 +184,4 @@
 
  (not= (mk-hard-grid) (mk-hard-grid)) => true)
 
-;; -----------------------------------------------------------------------------------------------------------------------------
-;; Functions used to save/charge a grid given a specified file 
-;; 
 
-(defn save-grid
-  "Saves a given `grid` to a .txt file in order to resume the game later"
-  [grid]
-  (sh/sh "echo" (g/grid->str grid)  ">"  "lastgrid.txt"))
-
-(save-grid sudoku-grid)
-
-(sh/sh "ls")
