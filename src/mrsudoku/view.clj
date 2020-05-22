@@ -5,7 +5,8 @@
    [seesaw.core :refer [frame label text config! grid-panel
                         horizontal-panel vertical-panel button separator pack! show! invoke-later]]
    [seesaw.border :refer [line-border]]
-   [mrsudoku.solver :as s]))
+   [mrsudoku.solver :as s]
+   [mrsudoku.saveorchargeGrid :as sc]))
 
 (def default-color "white")
 (def conflict-color "red")
@@ -112,13 +113,19 @@
                                                                       :listen [:action (fn [event] (show-updated-grid (s/mk-interm-grid)))])
                                                               (button :text "New Random Grid (hard)"
                                                                       :listen [:action (fn [event] (show-updated-grid (s/mk-hard-grid)))])
+                                                              (button :text "Save grid"
+                                                                      :listen [:action (fn [event] (sc/save-grid grid))])
+                                                              (button :text "Charge last saved grid"
+                                                                      :listen [:action (fn [event] (show-updated-grid (sc/charge-last-grid)))])
+                                                              (button :text "Charge a previously saved grid"
+                                                                      :listen [:action (fn [event] (show-updated-grid (sc/charge-randprev-grid)))])
                                                               (button :text "Solve Naïvely"
                                                                       :listen [:action (fn [event] (show-updated-grid (s/bruteforce-solve grid)))])
                                                               (button :text "Quit"
                                                                       :listen [:action (fn [event] (System/exit 0))])])
                                                      :fill-v])
                                             [:fill-h 32]])
-                          :minimum-size [640 :by 450]
+                          :minimum-size [670 :by 550]
                           :on-close :exit)]
     (swap! ctrl #(assoc % :grid-widget grid-widget :main-frame main-frame))
     main-frame))

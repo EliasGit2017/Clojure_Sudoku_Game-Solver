@@ -3,7 +3,6 @@
   (:require [mrsudoku.grid :as g]
             [mrsudoku.engine :as e]
             [clojure.set :as set]
-            [clojure.java.shell :as sh]
             [mrsudoku.solver :as s]))
 
 (def ^:private sudoku-grid (var-get #'g/sudoku-grid))
@@ -13,8 +12,8 @@
 
 (defn readfile
   "Returns a sequence from a file f"
-  [f]
-  (with-open [rdr (clojure.java.io/reader f)]
+  []
+  (with-open [rdr (clojure.java.io/reader "/home/elias/Documents/3I020/Projet_Sudoku/mrsudoku_19-03-2020/lastgrid.txt")]
     (doall (line-seq rdr))))
 
 (defn write-file
@@ -28,8 +27,6 @@
   [grid]
   (write-file (str (g/grid->str grid) "\n\n")))
 
-(save-grid (s/mk-hard-grid))
-
 (defn parse-grids
   [lists]
   (loop [to-parse lists, grids [], mygrid []]
@@ -40,16 +37,19 @@
       grids)))
 
 (defn split-spaces
+  "Splits a string at each space" 
   [line]
   (clojure.string/split line #"\s"))
 
 (defn remove-whitespaces
+  "Removes whitespaces from each line"
   [line]
   (->> line
        split-spaces
        (filter #(not (clojure.string/blank? %)))))
 
 (defn str->vecells
+  "Transforms a grid to "
   [vecgrid]
   (loop [vecgrid vecgrid, res []]
     (if (seq vecgrid)
@@ -75,6 +75,23 @@
                                               :else (g/mk-cell (Integer. (str (ffirst vecgrid)))))) (mod (inc cx) 9) (inc cy) (rest vecgrid)))
       newgrid)))
 
-(defn charge-grid
-  "Charges a previously saved grid from the `lastgrid.txt` file to resume a game"
-  (if-let))
+(defn charge-last-grid
+  "Charges the last previously saved grid from the `lastgrid.txt` file to resume a game"
+  []
+  (if-let [resume-last-grid (str->grid (str->vecells (last (parse-grids (readfile)))))]
+    resume-last-grid
+    nil))
+
+(defn charge-oldest_grid
+  "Charges the oldest previously saved grid from  the `lastgrid.txt` file to resume a game"
+  []
+  (if-let [resume-last-grid (str->grid (str->vecells (first (parse-grids (readfile)))))]
+    resume-last-grid
+    nil))
+
+(defn charge-randprev-grid
+  "Randomly Charges any previously saved grid from  the lastgrid.txt `file to resume a game"
+  []
+  (if-let [resume-last-grid (str->grid (str->vecells (rand-nth (parse-grids (readfile)))))]
+    resume-last-grid
+    nil))

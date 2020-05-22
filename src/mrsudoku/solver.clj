@@ -2,8 +2,7 @@
   (:use midje.sweet)
   (:require [mrsudoku.grid :as g]
             [mrsudoku.engine :as e]
-            [clojure.set :as set]
-            [clojure.java.shell :as sh]))
+            [clojure.set :as set]))
 
 (def ^:private sudoku-grid (var-get #'g/sudoku-grid))
 ;;---------------------------------------------------------------------------------------------------------------------------------------
@@ -139,14 +138,14 @@
 (defn mk-easy-grid
   "Returns an easy grid made of 30 set cells"
   []
-  (mk-randomgrid (mk-empty-grid) 32))
+  (mk-randomgrid (mk-empty-grid) 35))
 
 (fact 
  
  (g/reduce-grid (fn [acc cx cy cell]
                 (if (= (:status cell) :empty)
                   (+ acc 1)
-                  acc)) 0 (mk-easy-grid)) => 49
+                  acc)) 0 (mk-easy-grid)) => 46
  
  (e/grid-conflicts (mk-easy-grid)) => {}
  
