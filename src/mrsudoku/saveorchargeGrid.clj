@@ -1,8 +1,6 @@
 (ns mrsudoku.saveorchargeGrid
   (:use midje.sweet)
   (:require [mrsudoku.grid :as g]
-            [mrsudoku.engine :as e]
-            [clojure.set :as set]
             [mrsudoku.solver :as s]))
 
 (def ^:private sudoku-grid (var-get #'g/sudoku-grid))
@@ -13,13 +11,13 @@
 (defn readfile
   "Returns a sequence from a file f"
   []
-  (with-open [rdr (clojure.java.io/reader "/home/elias/Documents/3I020/Projet_Sudoku/mrsudoku_19-03-2020/lastgrid.txt")]
+  (with-open [rdr (clojure.java.io/reader "./lastgrid.txt")]
     (doall (line-seq rdr))))
 
 (defn write-file
-  "Writes the string chain `to-write` in the file /home/elias/Documents/3I020/Projet_Sudoku/mrsudoku_19-03-2020/lastgrid.txt which will be used to save a grid"
+  "Writes the string chain `to-write` in the file ./lastgrid.txt which will be used to save a grid"
   [to-write]
-  (with-open [w (clojure.java.io/writer  "/home/elias/Documents/3I020/Projet_Sudoku/mrsudoku_19-03-2020/lastgrid.txt" :append true)]
+  (with-open [w (clojure.java.io/writer  "./lastgrid.txt" :append true)]
     (.write w to-write)))
 
 (defn save-grid

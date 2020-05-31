@@ -5,6 +5,8 @@
             [clojure.set :as set]))
 
 (def ^:private sudoku-grid (var-get #'g/sudoku-grid))
+
+(declare mk-empty-grid)
 ;;---------------------------------------------------------------------------------------------------------------------------------------
 ;; Naïve solver
 
@@ -66,6 +68,36 @@
 ;; Print solution
 (println (g/grid->str (bruteforce-solve sudoku-grid)))
 
+;; ------------------------------- Breadth First Search Sudoku Solver ---------------------------------------------------
+
+(defn list->grid
+  "Transforms a list formated sudoku `s-list` to a grid format"
+  [s-list]
+  (loop [resgrid (mk-empty-grid), cx 1, cy 1, ite 0]
+    (if (<= cy 9)
+      (if (< cx 9)
+        (recur (g/change-cell resgrid cx cy (nth s-list ite)) (inc cx) cy (inc ite))
+        (recur (g/change-cell resgrid cx cy (nth s-list ite)) (mod (inc cx) 9) (inc cy) (inc ite)))
+      resgrid)))
+
+(defn breadth-solve
+  "Solves the sudoku `grid` using Brute force by generating each and every grid possible and returning
+   the right one"
+  [grid]
+  (if-let [[cx cy] (first (for [cx (range 1 10) cy (range 1 10)
+                                :when (= (:status (g/cell grid cx cy)) :empty)]
+                            [cx cy]))]
+    (flatten (map #(breadth-solve (g/change-cell grid cx cy (g/mk-cell %))) (possible-values grid cx cy)))
+    grid))
+
+(defn bruteforce-breadth-solve
+  "Returns the sudoku in the correct grid format after solving with breadth search."
+  [grid]
+  (-> grid
+      breadth-solve
+      list->grid
+      to-solve))
+
 ;; ----------------------------------------------------------------------------------------------------------------------------------------
 ;; Functions used to generate a random grid considering the fact that the minimum number of specified digits must be at least 17 to have
 ;; a unique answer (for initial grids that have less than 17 specified digits, there is no configuration such as only one solution is
@@ -77,9 +109,9 @@
   (conj (into [] (repeat 3 (into [] (repeat 3 (into [] (repeat 9 (g/mk-cell)))))))))
 
 (fact
- 
+
  (g/grid->str (mk-empty-grid)) => " .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . \n .   .   .   .   .   .   .   .   . "
- 
+
  (g/reduce-grid (fn [acc cx cy cell]
                   (if (= (:status cell) :empty)
                     (+ acc 1)
@@ -110,7 +142,7 @@
         seed
         (println "The random grid generated has no solution"))
       (let [cx (rand-nth (range 1 10)), cy (rand-nth (range 1 10)), poss (into [] (possible-values seed cx cy))]
-       (recur (g/change-cell seed cx cy (g/mk-cell (rand-nth poss))) (dec n)))))) 
+        (recur (g/change-cell seed cx cy (g/mk-cell (rand-nth poss))) (dec n))))))
 
 (defn mk-randomgrid
   "Returns a random sudoku grid given an empty `grid` having `n` numbers set"
@@ -136,19 +168,19 @@
  (= (mk-randomgrid (mk-empty-grid) 40) (mk-randomgrid (mk-empty-grid) 40)) => false)
 
 (defn mk-easy-grid
-  "Returns an easy grid made of 30 set cells"
+  "Returns an easy grid made of 38 set cells"
   []
-  (mk-randomgrid (mk-empty-grid) 35))
+  (mk-randomgrid (mk-empty-grid) 38))
 
-(fact 
- 
+(fact
+
  (g/reduce-grid (fn [acc cx cy cell]
-                (if (= (:status cell) :empty)
-                  (+ acc 1)
-                  acc)) 0 (mk-easy-grid)) => 46
- 
+                  (if (= (:status cell) :empty)
+                    (+ acc 1)
+                    acc)) 0 (mk-easy-grid)) => 43
+
  (e/grid-conflicts (mk-easy-grid)) => {}
- 
+
  (not= (mk-easy-grid) (mk-easy-grid)) => true)
 
 (defn mk-interm-grid
@@ -182,5 +214,4 @@
  (e/grid-conflicts (mk-hard-grid)) => {}
 
  (not= (mk-hard-grid) (mk-hard-grid)) => true)
-
 

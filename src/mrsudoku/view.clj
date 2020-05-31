@@ -3,7 +3,7 @@
   (:require
    [mrsudoku.grid :as g]
    [seesaw.core :refer [frame label text config! grid-panel
-                        horizontal-panel vertical-panel button separator pack! show! invoke-later]]
+                        horizontal-panel vertical-panel button pack! show! invoke-later]]
    [seesaw.border :refer [line-border]]
    [mrsudoku.solver :as s]
    [mrsudoku.saveorchargeGrid :as sc]))
@@ -119,7 +119,7 @@
                                                                       :listen [:action (fn [event] (show-updated-grid (sc/charge-last-grid)))])
                                                               (button :text "Charge a previously saved grid"
                                                                       :listen [:action (fn [event] (show-updated-grid (sc/charge-randprev-grid)))])
-                                                              (button :text "Solve Naïvely"
+                                                              (button :text "Solve"
                                                                       :listen [:action (fn [event] (show-updated-grid (s/bruteforce-solve grid)))])
                                                               (button :text "Quit"
                                                                       :listen [:action (fn [event] (System/exit 0))])])
@@ -137,6 +137,5 @@
     (:set :init :empty) (config! cell-widget :background default-color)
     :solved (config! cell-widget :background solved-color :editable? false)
     (throw (ex-info "Cannot update cell widget." {:cell cell :cell-widget cell-widget}))))
-
 
 

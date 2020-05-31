@@ -1,29 +1,11 @@
 # Mini-projet MrSudoku
 
-Le jeu du Sudoku en mini-projet.
+Réalisation d'un Sudoku avec solver et implémentation de fonctionnalités supplémentaires telles que :
 
+* Sauvegarde d'une grille en cours et chargement de cette grille lors de la prochaine partie
+* Génération de grilles aléatoires (cette génération est parfois imparfaite car certaines grilles peuvent s'avérer compliquées à résoudre car il est nécessaire de supposer un nombre possible pour pouvoir aboutir à la solution). Ces grilles sont réparties en niveaux (Easy - Intermediate - Hard)
+* Possibilité de jouer en utilisant une grille importée. Il faut alors ajouter la grille à la fin de `./lastgrid.txt`  et de choisir `Charge Last Saved Grid` dans le menu.
 
-==> le fichier src/mrsudoku/engine.clj est à compléter...
+![MainView](./mainview.png)
 
-==> sans oublier le solveur ...
-
-=> Grille exemple résolue :
-
- 5   3  [4] [6]  7  [8] [9] [1] [2]
- 6  [7] [2]  1   9   5  [3] [4] [8]
-[1]  9   8  [3] [4] [2] [5]  6  [7]
- 8  [5] [9] [7]  6  [1] [4] [2]  3 
- 4  [2] [6]  8  [5]  3  [7] [9]  1 
- 7  [1] [3] [9]  2  [4] [8] [5]  6 
-[9]  6  [1] [5] [3] [7]  2   8  [4]
-[2] [8] [7]  4   1   9  [6] [3]  5 
-[3] [4] [5] [2]  8  [6] [1]  7   9 
-
-# TO DO
-
-```clojure
-(fn [event]
-((resolve 'mrsudoku.control/show-solved) ctrl (s/bruteforce-solve grid) grid-widget))
-```
-
-https://www.technologyreview.com/2012/01/06/188520/mathematicians-solve-minimum-sudoku-problem/
+![Solved](./Solved.png)
