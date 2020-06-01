@@ -71,14 +71,12 @@
 ;; ------------------------------- Breadth First Search Sudoku Solver ---------------------------------------------------
 
 (defn list->grid
-  "Transforms a list formated sudoku `s-list` to a grid format"
   [s-list]
-  (loop [resgrid (mk-empty-grid), cx 1, cy 1, ite 0]
-    (if (<= cy 9)
-      (if (< cx 9)
-        (recur (g/change-cell resgrid cx cy (nth s-list ite)) (inc cx) cy (inc ite))
-        (recur (g/change-cell resgrid cx cy (nth s-list ite)) (mod (inc cx) 9) (inc cy) (inc ite)))
-      resgrid)))
+  {:pre [(= 81 (count s-list))]}
+  (loop [resgrid [], blocs (partition 9 s-list), nb 0]
+    (if (= 9 nb)
+      (into [] resgrid)
+      (recur (into resgrid [[(into [] (nth blocs nb)) (into [] (nth blocs (+ 1 nb))) (into [] (nth blocs (+ 2 nb)))]]) blocs (+ nb 3)))))
 
 (defn breadth-solve
   "Solves the sudoku `grid` using Brute force by generating each and every grid possible and returning
@@ -87,7 +85,7 @@
   (if-let [[cx cy] (first (for [cx (range 1 10) cy (range 1 10)
                                 :when (= (:status (g/cell grid cx cy)) :empty)]
                             [cx cy]))]
-    (flatten (map #(breadth-solve (g/change-cell grid cx cy (g/mk-cell %))) (possible-values grid cx cy)))
+    (flatten (map #(breadth-solve (g/change-cell grid cx cy (g/mk-cell :set %))) (possible-values grid cx cy)))
     grid))
 
 (defn bruteforce-breadth-solve
