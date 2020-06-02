@@ -6,7 +6,8 @@
 
 (def ^:private sudoku-grid (var-get #'g/sudoku-grid))
 
-(declare mk-empty-grid)
+(declare mk-empty-grid mk-easy-grid mk-interm-grid mk-hard-grid mk-randomgrid)
+
 ;;---------------------------------------------------------------------------------------------------------------------------------------
 ;; Naïve solver
 
@@ -40,16 +41,43 @@
     (map #(g/change-cell grid cx cy {:status :set, :value %}) (possible-values grid cx cy))
     [grid]))
 
+(fact
+ 
+ (assign-cell sudoku-grid 3 1) => (list (g/change-cell sudoku-grid 3 1 (g/mk-cell :set 1))
+                                    (g/change-cell sudoku-grid 3 1 (g/mk-cell :set 4))
+                                    (g/change-cell sudoku-grid 3 1 (g/mk-cell :set 2)))
+ 
+ (assign-cell sudoku-grid 4 4) => (list (g/change-cell sudoku-grid 4 4 (g/mk-cell :set 7))
+                                        (g/change-cell sudoku-grid 4 4 (g/mk-cell :set 9))
+                                        (g/change-cell sudoku-grid 4 4 (g/mk-cell :set 5)))
+ 
+ (assign-cell sudoku-grid 2 4) => (list (g/change-cell sudoku-grid 2 4 (g/mk-cell :set 1))
+                                        (g/change-cell sudoku-grid 2 4 (g/mk-cell :set 2))
+                                        (g/change-cell sudoku-grid 2 4 (g/mk-cell :set 5))))
+
 (defn to-solve
   "Updates the :status value in each cell of the solved `grid` to :solved.
   This function is called at the end of the bruteforce-solve function."
   [grid]
+  {:pre [(= 3 (count grid))]}
   (loop [newgrid grid cx 1 cy 1]
     (if (<= cy 9)
       (if (< cx 9)
-        (recur (g/change-cell newgrid cx cy {:status :solved, :value (:value (g/cell grid cx cy))}) (inc cx) cy)
-        (recur (g/change-cell newgrid cx cy {:status :solved, :value (:value (g/cell grid cx cy))}) (mod (inc cx) 9) (inc cy)))
+        (recur (g/change-cell newgrid cx cy (g/mk-cell :solved (g/cell-value (g/cell grid cx cy)))) (inc cx) cy)
+        (recur (g/change-cell newgrid cx cy (g/mk-cell :solved (g/cell-value (g/cell grid cx cy)))) (mod (inc cx) 9) (inc cy)))
       newgrid)))
+
+(fact
+
+(g/reduce-grid (fn [acc cx cy cell]
+                 (if (not= (:status cell) :solved)
+                   (+ acc 1)
+                   acc)) 0 (to-solve sudoku-grid)) => 0
+ 
+ (g/reduce-grid (fn [acc cx cy cell]
+                  (if (not= (:status cell) :solved)
+                    (+ acc 1)
+                    acc)) 0 (g/change-cell (to-solve sudoku-grid) 2 4 (g/mk-cell :conflict 4))) => 1)
 
 
 ;; bruteforce-solve is called on every cell of the grid but only the cells that are not :init are considered
@@ -65,18 +93,31 @@
        (first (keep #(bruteforce-solve % coords) possibles)))
      (to-solve grid))))
 
+(fact
+ 
+ (e/grid-conflicts (bruteforce-solve sudoku-grid)) => {}
+ 
+ (e/grid-conflicts (bruteforce-solve (mk-easy-grid))) => {}
+ 
+ (e/grid-conflicts (bruteforce-solve (mk-interm-grid))) => {}
+ 
+ (e/grid-conflicts (bruteforce-solve (mk-hard-grid))) => {})
+
 ;; Print solution
-(println (g/grid->str (bruteforce-solve sudoku-grid)))
+(comment (println (g/grid->str (bruteforce-solve sudoku-grid))))
 
 ;; ------------------------------- Breadth First Search Sudoku Solver ---------------------------------------------------
 
 (defn list->grid
   [s-list]
-  {:pre [(= 81 (count s-list))]}
-  (loop [resgrid [], blocs (partition 9 s-list), nb 0]
-    (if (= 9 nb)
-      (into [] resgrid)
-      (recur (into resgrid [[(into [] (nth blocs nb)) (into [] (nth blocs (+ 1 nb))) (into [] (nth blocs (+ 2 nb)))]]) blocs (+ nb 3)))))
+  {:pre [(= 0 (mod (count s-list) 81))]} ;; Il peut y avoir plusieurs solutions, dans ce cas on prend la première
+  (if (zero? (count s-list))
+             "NO SOLUTION FOUND. Possibly 2 solutions"
+    (let [blocs (partition 9 (take 81 s-list))]
+    (loop [resgrid [], nb 0]
+      (if (= 9 nb)
+        (into [] resgrid)
+        (recur (into resgrid [[(into [] (nth blocs nb)) (into [] (nth blocs (+ 1 nb))) (into [] (nth blocs (+ 2 nb)))]]) (+ nb 3)))))))
 
 (defn breadth-solve
   "Solves the sudoku `grid` using Brute force by generating each and every grid possible and returning
@@ -95,6 +136,21 @@
       breadth-solve
       list->grid
       to-solve))
+
+(fact
+ 
+(e/grid-conflicts (bruteforce-breadth-solve sudoku-grid)) => {}
+
+(e/grid-conflicts (bruteforce-breadth-solve (mk-easy-grid))) => {}
+
+;; Contrairement à la méthode de recherche en profondeur, Le temps de résolution de grilles
+;; intermédiaires et difficiles peut être très long. J'ai choisi de ne pas les inclure
+;; dans les test.
+  
+;(e/grid-conflicts (bruteforce-breadth-solve (mk-interm-grid))) => {}
+
+;(e/grid-conflicts (bruteforce-breadth-solve (mk-hard-grid))) => {}
+)
 
 ;; ----------------------------------------------------------------------------------------------------------------------------------------
 ;; Functions used to generate a random grid considering the fact that the minimum number of specified digits must be at least 17 to have
@@ -153,7 +209,7 @@
           (recur (g/change-cell rand-grid cx cy (g/mk-cell)) (dec toset))
           (recur rand-grid toset))))))
 
-(println (g/grid->str (mk-randomgrid (mk-empty-grid) 40)))
+(comment (println (g/grid->str (mk-randomgrid (mk-empty-grid) 40))))
 
 (fact
 

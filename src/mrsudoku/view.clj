@@ -82,7 +82,9 @@
                                                       :columns 1
                                                       :vgap 10
                                                       :items [(button :text "Solve"
-                                                                      :listen [:action (fn [event] (show-updated-grid (s/bruteforce-solve grid)))])])
+                                                                      :listen [:action (fn [event] (show-updated-grid (s/bruteforce-solve grid)))])
+                                                              (button :text "Save Grid"
+                                                                      :listen [:action (fn [event] (sc/save-grid grid))])])
                                                      :fill-v])
                                             [:fill-h 32]])
                           :minimum-size [640 :by 450])]
