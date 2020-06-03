@@ -6,11 +6,11 @@ Ma première approche a été d'utiliser un algorithme de backtracking qui consi
 
 J'ai alors décidé d'utiliser une approche dans laquelle on recherche la solution parmi toutes les configurations possibles à chaque étape de la tentative de résolution de la grille. La taille mémoire raisonnable des grilles de sudoku et les structures de données spécifiées dans le squelette du projet permettent de manipuler les instances du problème de manière compacte.  
 
-Ayant donc décidé d'aborder le problème sous la forme d'un problème de recherche de solution (et non de satisfaction de contraintes comme c'est le cas pour la résoltion par SAT ou par propagation de contraintes et recherche comme réalisé par Peter Norvig (lien)), j'ai tout d'abord commencé par essayer la recherche en largeur.
+Ayant donc décidé d'aborder le problème sous la forme d'un problème de recherche de solution (et non de satisfaction de contraintes comme c'est le cas pour la résolution par SAT ou par propagation de contraintes et recherche comme réalisé par Peter Norvig (lien)), j'ai tout d'abord commencé par essayer la recherche en largeur.
 
 ### Approche par recherche en largeur : `breadth-solve` 
 
-Pour chaque cellule de la grille dont le `:status` est à `:empty` et pour chaque chiffre parmi ceux possibles et respectants les contraintes d'unicité sur la ligne, la colonne et le bloc, on recherche la solution du sudoku en essayant les différentes valeurs possibles que l'on obtient grace à la fonction `mrsudoku.solver/possible-values`.
+Pour chaque cellule de la grille dont le `:status` est à `:empty` et pour chaque chiffre parmi ceux possibles et respectant les contraintes d'unicité sur la ligne, la colonne et le bloc, on recherche la solution du sudoku en essayant les différentes valeurs possibles que l'on obtient grace à la fonction `mrsudoku.solver/possible-values`.
 
 * On récupère tout d'abord la première cellule `:empty` de la grille.
 * On génère toutes les grilles possibles en remplissant la cellule considérée par les différentes valeurs possibles.
@@ -43,24 +43,22 @@ renvoie bien une liste vide. La situation peut être modélisée par un arbre su
 
 Exemple  : La grille suivante admet 3 solutions
 
+ 
+
 ```bash
- 7   .   9   .   .   .   6   .   .                     
+7   .   9   .   .   .   6   .   .                     
  .   .   5   .   4   .   .   7   . 
- 1   2   8   7   .   5   4   .   3 	  solution 1 :
- 5   7   .   .   3   2   9   8   .    breadth-solve 
- 4   .   .   6   8   .   .   .   .    -------------> 7  [4]  9  [3] [1] [8]  6  [2] [5]
- 3   8   .   .   9   1   .   .   . 				    [6] [3]  5  [2]  4  [9] [1]  7  [8]
- .   1   .   .   5   .   3   .   . 				     1   2   8   7  [6]  5   4  [9]  3 
- .   6   4   1   .   .   8   .   . 				     5   7  [1] [4]  3   2   9   8  [6]
- .   5   3   9   2   .   .   .   4 				     4  [9] [2]  6   8  [7] [5] [3] [1]
- 													 3   8  [6] [5]  9   1  [2] [4] [7]
-													[2]  1  [7] [8]  5  [4]  3  [6] [9]
-													[9]  6   4   1  [7] [3]  8  [5] [2]
-													[8]  5   3   9   2  [6] [7] [1]  4                                   
+ 1   2   8   7   .   5   4   .   3 	  
+ 5   7   .   .   3   2   9   8   .    
+ 4   .   .   6   8   .   .   .   .    
+ 3   8   .   .   9   1   .   .   . 
+ .   1   .   .   5   .   3   .   . 	 
+ .   6   4   1   .   .   8   .   . 	
+ .   5   3   9   2   .   .   .   4 	
 ```
 
 ```bash
- 7  [4]  9  [3] [1] [8]  6  [5] [2]
+ 7  [4]  9  [3] [1] [8]  6  [2] [5]
 [6] [3]  5  [2]  4  [9] [1]  7  [8]
  1   2   8   7  [6]  5   4  [9]  3 
  5   7  [1] [4]  3   2   9   8  [6]
@@ -68,8 +66,27 @@ Exemple  : La grille suivante admet 3 solutions
  3   8  [6] [5]  9   1  [2] [4] [7]
 [2]  1  [7] [8]  5  [4]  3  [6] [9]
 [9]  6   4   1  [7] [3]  8  [2] [5]
-[8]  5   3   9   2  [6] [7] [1]  4        La solution 2 est obtenue en inversant 				                                  simplement le 2 et le 5 en (8,1) et (9,1) 
- 7  [4]  9  [3] [1] [8]  6  [2] [5]
+[8]  5   3   9   2  [6] [7] [1]  4
+```
+
+   La solution 2 est obtenue en inversant simplement le 2 et le 5 pour les cellules (8,1) et (9,1):                                 
+
+```bash
+7  [4]  9  [3] [1] [8]  6  [5] [2]
+[6] [3]  5  [2]  4  [9] [1]  7  [8]
+ 1   2   8   7  [6]  5   4  [9]  3 
+ 5   7  [1] [4]  3   2   9   8  [6]
+ 4  [9] [2]  6   8  [7] [5] [3] [1]
+ 3   8  [6] [5]  9   1  [2] [4] [7]
+[2]  1  [7] [8]  5  [4]  3  [6] [9]
+[9]  6   4   1  [7] [3]  8  [2] [5]
+[8]  5   3   9   2  [6] [7] [1]  4  
+```
+
+Solution 3 :
+
+```bash
+7  [4]  9  [3] [1] [8]  6  [2] [5]
 [6] [3]  5  [2]  4  [9] [1]  7  [8]
  1   2   8   7  [6]  5   4  [9]  3 
  5   7  [1] [4]  3   2   9   8  [6]
@@ -77,7 +94,7 @@ Exemple  : La grille suivante admet 3 solutions
  3   8  [6] [5]  9   1  [2] [4] [7]
 [9]  1  [7] [8]  5  [4]  3  [6] [2]
 [2]  6   4   1  [7] [3]  8  [5] [9]
-[8]  5   3   9   2  [6] [7] [1]  4        Solution 3
+[8]  5   3   9   2  [6] [7] [1]  4 
 ```
 
 Dans ce cas, on prend la première solution dans la fonction `list->grid` (on peut récupérer les autres en décalant sur le résultat de `breadth-solve` à l'aide d'un drop.
