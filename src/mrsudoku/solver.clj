@@ -112,7 +112,7 @@
   [s-list]
   {:pre [(= 0 (mod (count s-list) 81))]} ;; Il peut y avoir plusieurs solutions, dans ce cas on prend la première
   (if (zero? (count s-list))
-             "NO SOLUTION FOUND. Possibly 2 solutions"
+             "Pb"
     (let [blocs (partition 9 (take 81 s-list))]
     (loop [resgrid [], nb 0]
       (if (= 9 nb)

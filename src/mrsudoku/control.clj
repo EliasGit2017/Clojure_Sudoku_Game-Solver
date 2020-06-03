@@ -67,7 +67,7 @@
           (invoke-later (text! cell-widget "")))))))
 
 
-(comment
+(comment tried to make seesaw work ... Tried ....
   (defn show-solvedgrid [ctrl solved-grid]
     (reset! ctrl {:grid solved-grid})
     (let [new-frame (v/mk-main-frame solved-grid ctrl)]
