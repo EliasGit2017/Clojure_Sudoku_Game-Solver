@@ -10,18 +10,17 @@ Ayant donc décidé d'aborder le problème sous la forme d'un problème de reche
 
 ### Approche par recherche en largeur : `breadth-solve` 
 
-Pour chaque cellule de la grille dont le `:status` est à `:empty` et pour chaque chiffre parmi ceux possibles et respectant les contraintes d'unicité sur la ligne, la colonne et le bloc, on recherche la solution du sudoku en essayant les différentes valeurs possibles que l'on obtient grace à la fonction `mrsudoku.solver/possible-values`.
+Pour chaque cellule de la grille dont le `:status` est à `:empty` et pour chaque chiffre parmi ceux possibles et respectant les contraintes d'unicité sur la ligne, la colonne et le bloc, on recherche la solution du sudoku en essayant les différentes valeurs possibles que l'on obtient grâce à la fonction `mrsudoku.solver/possible-values`.
 
 * On récupère tout d'abord la première cellule `:empty` de la grille.
 * On génère toutes les grilles possibles en remplissant la cellule considérée par les différentes valeurs possibles.
-* On réalise une récursion pour chacune des grilles générées afin d'examiner toutes les possibilités.
+* On réalise une récursion pour chacune des grilles générées afin d'examiner toutes les possibilités induites par le changement réalisé.
 
-De cette manière, on map sur toutes les grilles pouvant être générées en respectant les contraintes du jeu imposées par les cellules à `:init` de la grille de départ et les ajouts réalisés lors de la recherche.
+De cette manière, on map sur toutes les grilles pouvant être générées, en respectant les contraintes du jeu imposées par les cellules à `:init` de la grille de départ et les ajouts réalisés lors de la recherche.
 
 ```clojure
 (defn breadth-solve
-  "Solves the sudoku `grid` using Brute force by generating each and every grid possible and returning
-   the right one"
+  "Solves the sudoku `grid` using Brute force by generating each and every grid possible and returning the right one"
   [grid]
   (if-let [[cx cy] (first (for [cx (range 1 10) cy (range 1 10)
                                 :when (= (:status (g/cell grid cx cy)) :empty)]
@@ -30,20 +29,16 @@ De cette manière, on map sur toutes les grilles pouvant être générées en re
     grid))
 ```
 
- 
-
-On a recours à `flatten` car lorsque les remplissages successifs de cellules aboutissent à une cellule impossible à remplir (car `mrsudoku.solver/possible-values` retourne `#{}` dans cette configuration), on obtient une série de listes vides. Ces listes vides sont obtenues lors de l'appel à map (qui permet de traiter toutes les possibilités générées) et qui dans un cas tel que celui-ci :
+On a recours à `flatten` car lorsque les remplissages successifs de cellules aboutissent à une cellule impossible à remplir (dans le cas où `mrsudoku.solver/possible-values` retourne `#{}`), on obtient une série de listes vides qui sont dues à l'appel de `map` (qui permet de traiter toutes les possibilités générées) et qui dans un cas tel que celui-ci :
 
 ```clojure
 (fact
-    (map #(breadth-solve (g/change-cell grid cx cy (g/mk-cell :set %))) #{}) => '()) => true
+    (map #(breadth-solve (g/change-cell sudoku-grid 5 5 (g/mk-cell :set %))) #{}) => '()) => true
 ```
 
-renvoie bien une liste vide. La situation peut être modélisée par un arbre sur lequel on recherche la solution, dont la racine est la grille de départ et les noeuds n'aboutissant à aucun résultat renvoient `()`.  Le noeud non vide le plus développé correspond à la solution et on le récupère à l'aide de `flatten`. Dans le cas d'une grille possédant plusieurs solutions, on peut avoir à récupérer plusieurs noeuds solution. 
+renvoie bien une liste vide. La situation peut être modélisée par un arbre sur lequel on recherche la solution, dont la racine est la grille de départ et les noeuds n'aboutissant à aucun résultat renvoient `()`.  Le noeud non vide le plus développé correspond à la solution et on le récupère à l'aide de `flatten` qui nous permet d'ignorer les noeuds qui ne sont pas des solutions. Dans le cas d'une grille possédant plusieurs solutions, on récupère tous noeuds solution. 
 
-Exemple  : La grille suivante admet 3 solutions
-
- 
+Exemple  : La grille suivante (générée par `mrsudoku.solver/mk-easy-grid`) admet 3 solutions 
 
 ```bash
 7   .   9   .   .   .   6   .   .                     
@@ -97,7 +92,7 @@ Solution 3 :
 [8]  5   3   9   2  [6] [7] [1]  4 
 ```
 
-Dans ce cas, on prend la première solution dans la fonction `list->grid` (on peut récupérer les autres en décalant sur le résultat de `breadth-solve` à l'aide d'un drop.
+Dans l'algorithme, j'ai choisi de prendre la première solution dans la fonction `list->grid` (mais on peut récupérer les autres en décalant sur le résultat de `breadth-solve` à l'aide d'un drop comme ci-dessous :
 
 ```clojure
 (def mg (breadth-solve (mk-easy-grid)))
@@ -106,7 +101,7 @@ Dans ce cas, on prend la première solution dans la fonction `list->grid` (on pe
 (e/grid-conflicts (list->grid (take 81 (drop 162 mg)))) => {}
 ```
 
-Lorsqu'il n'y a plus de cellule à `:empty` dans la grille, on retourne la grille résultat sous la forme d'une liste de cellules organisées par blocs où chaque cellule est résolue. A l'aide des fonctions `list->grid` et `to-solve`, on retrouve le format spécifié dans le sujet et l'on met à jour le statut des cellules à `:solved` pour adapter l'affichage de l'application.  
+Lorsqu'il n'y a plus de cellule à `:empty` dans la grille, on retourne la grille résultat sous la forme d'une liste de cellules organisées par blocs où chaque cellule est résolue. A l'aide des fonctions `list->grid` et `to-solve`, on retrouve le format spécifié dans le sujet et on met à jour le statut des cellules à `:solved` pour adapter l'affichage de l'application.  
 
 ```clojure
 (defn bruteforce-breadth-solve
@@ -120,11 +115,11 @@ Lorsqu'il n'y a plus de cellule à `:empty` dans la grille, on retourne la grill
 
 ##### Remarques :
 
-Cette méthode permet de rechercher toutes les solutions possibles mais est très gourmande en mémoire dans le cas de grilles ayant un nombre importants de contraintes et de possibilités. En effet, on procédera à la génération de toutes les éventualités et on ne s'arrêtera que lorsqu'elles seront toutes examinées (qu'elles aboutissent à un résultat ou non). Contrairement à la deuxième méthode, `bruteforce-breadth-solve` est plus lente et ne permet pas de résoudre en temps satisfaisant les grilles de difficulté moyenne (avec 57 cellules à déterminer) et encore moins les grilles difficiles (avec 66 cellules vides). Son seul avantage par rapport à l'algorithme utilisé pour la recherche en profondeur est le renvoi de toutes les solutions.  
+Cette méthode permet de rechercher toutes les solutions possibles mais est très gourmande en mémoire dans le cas de grilles ayant un nombre importants de possibilités. En effet, on procédera à la génération de toutes les éventualités et on ne s'arrêtera que lorsqu'elles seront toutes examinées (qu'elles aboutissent à un résultat ou non). Contrairement à la deuxième méthode, `bruteforce-breadth-solve` est plus lente et ne permet pas de résoudre en temps satisfaisant les grilles de difficulté moyenne (avec 57 cellules à déterminer) et encore moins les grilles difficiles (dont 66 cellules sont vides). Son seul avantage par rapport à l'algorithme utilisé pour la recherche en profondeur est le renvoi de toutes les solutions.  
 
 ### Approche par recherche en profondeur : `bruteforce-solve`
 
-
+Contrairement à `bruteforce-breadth-solve`, `bruteforce-solve` réalise en recherche en profondeur et ne retourne que la première solution trouvée. De manière similaire, on génère à chaque niveau de la récursion l'ensemble des grilles possibles pour une case `:empty` examinée.  
 
 
 
