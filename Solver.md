@@ -119,7 +119,34 @@ Cette méthode permet de rechercher toutes les solutions possibles mais est trè
 
 ### Approche par recherche en profondeur : `bruteforce-solve`
 
-Contrairement à `bruteforce-breadth-solve`, `bruteforce-solve` réalise en recherche en profondeur et ne retourne que la première solution trouvée. De manière similaire, on génère à chaque niveau de la récursion l'ensemble des grilles possibles pour une case `:empty` examinée.  
+Contrairement à `bruteforce-breadth-solve`, `bruteforce-solve` réalise une recherche en profondeur et ne retourne que la première solution trouvée. De manière similaire, on génère à chaque niveau de la récursion l'ensemble des grilles possibles pour une case `:empty` examinée, à l'aide de la fonction `assign-cell` :
 
+```clojure
+(defn assign-cell
+  "Returns a list of grids where a possible value is assigned to the cell at coordinates cx cy."
+  [grid cx cy]
+  (if (= :empty (:status (g/cell grid cx cy)))
+    (map #(g/change-cell grid cx cy {:status :set, :value %}) (possible-values grid cx cy))
+    [grid]))
+```
 
+  qui retourne une liste de grilles où la cellule de coordonnées `cx` `cy` a été remplacée par les valeurs permises par les contraintes de la grille.  On définit alors `bruteforce-solve` en l'implémentant pour un appel initial  dont l'unique argument est une grille et qui appellera à son tour une version de `bruteforce-solve` prenant en argument une grille et les coordonnées des cellules sur lesquelles on réalise la récursion en examinant à chaque fois chacune des valeurs possibles. La différence avec  `bruteforce-breadth-solve` est que la recherche est cette fois ci de type depth first. On continue la récursion sur la grille que l'on examine jusqu'à trouver la solution qui sera retournée ou une incohérence.
+
+```clojure
+(defn bruteforce-solve
+  "Solves the sudoku `grid` using Brute force"
+  ([grid]
+   (bruteforce-solve grid (for [cx (range 1 10) cy (range 1 10)] [cx cy])))
+  ([grid [cxcy & coords]]
+   (if cxcy
+     (let [possibles (assign-cell grid (first cxcy) (second cxcy))]
+       (first (keep #(bruteforce-solve % coords) possibles)))
+     (to-solve grid))))
+```
+
+  En cas d'incohérence, la grille générée juste après celle qui vient d'être examinée et éliminée est prise en compte et la récursion se poursuit de même, jusqu'à trouver la solution ou une cellule impossible à remplir. On n'explore donc pas forcément la totalité des noeuds (sauf dans le pire des cas).
+
+##### Remarques :
+
+Réaliser une recherche en profondeur augmente grandement le temps de calcul. La résolution s'arrête dès qu'une solution est trouvée contrairement à `bruteforce-breadth-solve` qui continue à explorer toutes les possibilités (ou noeuds de l'arbre). Il est donc possible avec cet algorithme de résoudre des grilles de niveau intermédiaire et difficile. C'est donc celui qui est implémenté dans le programme et qui résout les grilles lorsque l'utilisateur appuie sur `Solve`.
 

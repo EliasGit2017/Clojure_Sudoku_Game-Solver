@@ -35,7 +35,7 @@
  (possible-values sudoku-grid 7 9) => #{1 3 6 4})
 
 (defn assign-cell
-  "Returns a set of grids where a possible value is assigned to the cell at coordinates cx cy."
+  "Returns a list of grids where a possible value is assigned to the cell at coordinates cx cy."
   [grid cx cy]
   (if (= :empty (:status (g/cell grid cx cy)))
     (map #(g/change-cell grid cx cy {:status :set, :value %}) (possible-values grid cx cy))
