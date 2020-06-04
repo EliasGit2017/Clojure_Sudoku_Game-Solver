@@ -6,7 +6,7 @@ Ma première approche a été d'utiliser un algorithme de backtracking qui consi
 
 J'ai alors décidé d'utiliser une approche dans laquelle on recherche la solution parmi toutes les configurations possibles à chaque étape de la tentative de résolution de la grille. La taille mémoire raisonnable des grilles de sudoku et les structures de données spécifiées dans le squelette du projet permettent de manipuler les instances du problème de manière compacte.  
 
-Ayant donc décidé d'aborder le problème sous la forme d'un problème de recherche de solution (et non de satisfaction de contraintes comme c'est le cas pour la résolution par SAT ou par propagation de contraintes et recherche comme réalisé par Peter Norvig (lien)), j'ai tout d'abord commencé par essayer la recherche en largeur.
+Ayant donc décidé d'aborder le problème sous la forme d'un problème de recherche de solution (et non de satisfaction de contraintes comme c'est le cas pour la résolution par SAT ou par propagation de contraintes et recherche comme réalisé par Peter Norvig http://norvig.com/sudoku.html), j'ai tout d'abord commencé par essayer la recherche en largeur.
 
 ### Approche par recherche en largeur : `breadth-solve` 
 
@@ -96,6 +96,7 @@ Dans l'algorithme, j'ai choisi de prendre la première solution dans la fonction
 
 ```clojure
 (def mg (breadth-solve (mk-easy-grid)))
+(count mg) => 324
 (e/grid-conflicts (list->grid (take 81 mg))) => {}
 (e/grid-conflicts (list->grid (take 81 (drop 81 mg)))) => {}
 (e/grid-conflicts (list->grid (take 81 (drop 162 mg)))) => {}
@@ -148,5 +149,7 @@ Contrairement à `bruteforce-breadth-solve`, `bruteforce-solve` réalise une rec
 
 ##### Remarques :
 
-Réaliser une recherche en profondeur augmente grandement le temps de calcul. La résolution s'arrête dès qu'une solution est trouvée contrairement à `bruteforce-breadth-solve` qui continue à explorer toutes les possibilités (ou noeuds de l'arbre). Il est donc possible avec cet algorithme de résoudre des grilles de niveau intermédiaire et difficile. C'est donc celui qui est implémenté dans le programme et qui résout les grilles lorsque l'utilisateur appuie sur `Solve`.
+Réaliser une recherche en profondeur diminue grandement le temps de calcul. La résolution s'arrête dès qu'une solution est trouvée contrairement à `bruteforce-breadth-solve` qui continue à explorer toutes les possibilités (ou noeuds de l'arbre). Il est donc possible avec cet algorithme de résoudre des grilles de niveau intermédiaire et difficile. C'est donc celui qui est implémenté dans le programme et qui résout les grilles lorsque l'utilisateur appuie sur `Solve`.
+
+
 
