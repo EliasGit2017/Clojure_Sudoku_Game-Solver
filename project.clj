@@ -1,6 +1,6 @@
 (defproject mrsudoku "0.2.0-SNAPSHOT"
   :description "Mini-projet Sudoku"
-  :url ".."
+  :url "https://github.com/EliasGit2017/Clojure_Sudoku_Game-Solver"
   :license {:name "MIT License"
             :url "https://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.10.1"]
